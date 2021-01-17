@@ -1,35 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace DapperExtensions.Sql
 {
     public class SqlCeDialect : SqlDialectBase
     {
-        public override char OpenQuote
-        {
-            get { return '['; }
-        }
+        public override char OpenQuote => '[';
 
-        public override char CloseQuote
-        {
-            get { return ']'; }
-        }
+        public override char CloseQuote => ']';
 
-        public override bool SupportsMultipleStatements
-        {
-            get { return false; }
-        }
+        public override bool SupportsMultipleStatements => false;
 
         public override string GetTableName(string schemaName, string tableName, string alias)
         {
             if (string.IsNullOrWhiteSpace(tableName))
             {
-                throw new ArgumentNullException("TableName");
+                throw new ArgumentNullException(nameof(tableName));
             }
 
-            StringBuilder result = new StringBuilder();
+            var result = new StringBuilder();
             result.Append(OpenQuote);
             if (!string.IsNullOrWhiteSpace(schemaName))
             {
@@ -60,7 +50,7 @@ namespace DapperExtensions.Sql
 
         public override string GetSetSql(string sql, int firstResult, int maxResults, IDictionary<string, object> parameters)
         {
-            string result = string.Format("{0} OFFSET @firstResult ROWS FETCH NEXT @maxResults ROWS ONLY", sql);
+            string result = $"{sql} OFFSET @firstResult ROWS FETCH NEXT @maxResults ROWS ONLY";
             parameters.Add("@firstResult", firstResult);
             parameters.Add("@maxResults", maxResults);
             return result;            

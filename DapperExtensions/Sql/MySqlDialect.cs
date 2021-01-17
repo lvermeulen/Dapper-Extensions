@@ -1,20 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace DapperExtensions.Sql
 {
     public class MySqlDialect : SqlDialectBase
     {
-        public override char OpenQuote
-        {
-            get { return '`'; }
-        }
+        public override char OpenQuote => '`';
 
-        public override char CloseQuote
-        {
-            get { return '`'; }
-        }
+        public override char CloseQuote => '`';
 
         public override string GetIdentitySql(string tableName)
         {
@@ -29,7 +21,7 @@ namespace DapperExtensions.Sql
 
         public override string GetSetSql(string sql, int firstResult, int maxResults, IDictionary<string, object> parameters)
         {
-            string result = string.Format("{0} LIMIT @firstResult, @maxResults", sql);
+            string result = $"{sql} LIMIT @firstResult, @maxResults";
             parameters.Add("@firstResult", firstResult);
             parameters.Add("@maxResults", maxResults);
             return result;

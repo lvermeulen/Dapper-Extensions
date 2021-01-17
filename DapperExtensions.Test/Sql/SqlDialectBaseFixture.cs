@@ -1,210 +1,208 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using DapperExtensions.Sql;
-using NUnit.Framework;
+using Xunit;
 
 namespace DapperExtensions.Test.Sql
 {
-    [TestFixture]
+    
     public class SqlDialectBaseFixture
     {
         public abstract class SqlDialectBaseFixtureBase
         {
             protected TestDialect Dialect;
 
-            [SetUp]
-            public void Setup()
+            protected SqlDialectBaseFixtureBase()
             {
-                Dialect = new TestDialect();
-            } 
+	            Dialect = new TestDialect();
+            }
         }
 
-        [TestFixture]
+        
         public class Properties : SqlDialectBaseFixtureBase
         {
-            [Test]
+            [Fact]
             public void CheckSettings()
             {
-                Assert.AreEqual('"', Dialect.OpenQuote);
-                Assert.AreEqual('"', Dialect.CloseQuote);
-                Assert.AreEqual(";" + Environment.NewLine, Dialect.BatchSeperator);
-                Assert.AreEqual('@', Dialect.ParameterPrefix);
-                Assert.IsTrue(Dialect.SupportsMultipleStatements);
+                Assert.Equal('"', Dialect.OpenQuote);
+                Assert.Equal('"', Dialect.CloseQuote);
+                Assert.Equal(";" + Environment.NewLine, Dialect.BatchSeperator);
+                Assert.Equal('@', Dialect.ParameterPrefix);
+                Assert.True(Dialect.SupportsMultipleStatements);
             }
         }
 
-        [TestFixture]
+        
         public class IsQuotedMethod : SqlDialectBaseFixtureBase
         {
-            [Test]
+            [Fact]
             public void WithQuotes_ReturnsTrue()
             {
-                Assert.IsTrue(Dialect.IsQuoted("\"foo\""));
+                Assert.True(Dialect.IsQuoted("\"foo\""));
             }
 
-            [Test]
+            [Fact]
             public void WithOnlyStartQuotes_ReturnsFalse()
             {
-                Assert.IsFalse(Dialect.IsQuoted("\"foo"));
+                Assert.False(Dialect.IsQuoted("\"foo"));
             }
 
-            [Test]
+            [Fact]
             public void WithOnlyCloseQuotes_ReturnsFalse()
             {
-                Assert.IsFalse(Dialect.IsQuoted("foo\""));
+                Assert.False(Dialect.IsQuoted("foo\""));
             }
         }
         
-        [TestFixture]
+        
         public class QuoteStringMethod : SqlDialectBaseFixtureBase
         {
-            [Test]
+            [Fact]
             public void WithNoQuotes_AddsQuotes()
             {
-                Assert.AreEqual("\"foo\"", Dialect.QuoteString("foo"));
+                Assert.Equal("\"foo\"", Dialect.QuoteString("foo"));
             }
 
-            [Test]
+            [Fact]
             public void WithStartQuote_AddsQuotes()
             {
-                Assert.AreEqual("\"\"foo\"", Dialect.QuoteString("\"foo"));
+                Assert.Equal("\"\"foo\"", Dialect.QuoteString("\"foo"));
             }
 
-            [Test]
+            [Fact]
             public void WithCloseQuote_AddsQuotes()
             {
-                Assert.AreEqual("\"foo\"\"", Dialect.QuoteString("foo\""));
+                Assert.Equal("\"foo\"\"", Dialect.QuoteString("foo\""));
             }
 
-            [Test]
+            [Fact]
             public void WithBothQuote_DoesNotAddQuotes()
             {
-                Assert.AreEqual("\"foo\"", Dialect.QuoteString("\"foo\""));
+                Assert.Equal("\"foo\"", Dialect.QuoteString("\"foo\""));
             }
         }
 
-        [TestFixture]
+        
         public class UnQuoteStringMethod : SqlDialectBaseFixtureBase
         {
-            [Test]
+            [Fact]
             public void WithNoQuotes_AddsQuotes()
             {
-                Assert.AreEqual("foo", Dialect.UnQuoteString("foo"));
+                Assert.Equal("foo", Dialect.UnQuoteString("foo"));
             }
 
-            [Test]
+            [Fact]
             public void WithStartQuote_AddsQuotes()
             {
-                Assert.AreEqual("\"foo", Dialect.UnQuoteString("\"foo"));
+                Assert.Equal("\"foo", Dialect.UnQuoteString("\"foo"));
             }
 
-            [Test]
+            [Fact]
             public void WithCloseQuote_AddsQuotes()
             {
-                Assert.AreEqual("foo\"", Dialect.UnQuoteString("foo\""));
+                Assert.Equal("foo\"", Dialect.UnQuoteString("foo\""));
             }
 
-            [Test]
+            [Fact]
             public void WithBothQuote_DoesNotAddQuotes()
             {
-                Assert.AreEqual("foo", Dialect.UnQuoteString("\"foo\""));
+                Assert.Equal("foo", Dialect.UnQuoteString("\"foo\""));
             }
         }
 
-        [TestFixture]
+        
         public class GetTableNameMethod : SqlDialectBaseFixtureBase
         {
-            [Test]
+            [Fact]
             public void NullTableName_ThrowsException()
             {
                 var ex = Assert.Throws<ArgumentNullException>(() => Dialect.GetTableName(null, null, null));
-                Assert.AreEqual("TableName", ex.ParamName);
-                StringAssert.Contains("cannot be null", ex.Message);
+                Assert.Equal("tableName", ex.ParamName);
+                Assert.Contains("cannot be null", ex.Message);
             }
 
-            [Test]
+            [Fact]
             public void EmptyTableName_ThrowsException()
             {
                 var ex = Assert.Throws<ArgumentNullException>(() => Dialect.GetTableName(null, string.Empty, null));
-                Assert.AreEqual("TableName", ex.ParamName);
-                StringAssert.Contains("cannot be null", ex.Message);
+                Assert.Equal("tableName", ex.ParamName);
+                Assert.Contains("cannot be null", ex.Message);
             }
 
-            [Test]
+            [Fact]
             public void TableNameOnly_ReturnsProperlyQuoted()
             {
                 string result = Dialect.GetTableName(null, "foo", null);
-                Assert.AreEqual("\"foo\"", result);
+                Assert.Equal("\"foo\"", result);
             }
 
-            [Test]
+            [Fact]
             public void SchemaAndTable_ReturnsProperlyQuoted()
             {
                 string result = Dialect.GetTableName("bar", "foo", null);
-                Assert.AreEqual("\"bar\".\"foo\"", result);
+                Assert.Equal("\"bar\".\"foo\"", result);
             }
 
-            [Test]
+            [Fact]
             public void AllParams_ReturnsProperlyQuoted()
             {
                 string result = Dialect.GetTableName("bar", "foo", "al");
-                Assert.AreEqual("\"bar\".\"foo\" AS \"al\"", result);
+                Assert.Equal("\"bar\".\"foo\" AS \"al\"", result);
             }
 
-            [Test]
+            [Fact]
             public void ContainsQuotes_DoesNotAddExtraQuotes()
             {
                 string result = Dialect.GetTableName("\"bar\"", "\"foo\"", "\"al\"");
-                Assert.AreEqual("\"bar\".\"foo\" AS \"al\"", result);
+                Assert.Equal("\"bar\".\"foo\" AS \"al\"", result);
             }
         }
 
-        [TestFixture]
+        
         public class GetColumnNameMethod : SqlDialectBaseFixtureBase
         {
-            [Test]
+            [Fact]
             public void NullColumnName_ThrowsException()
             {
                 var ex = Assert.Throws<ArgumentNullException>(() => Dialect.GetColumnName(null, null, null));
-                Assert.AreEqual("ColumnName", ex.ParamName);
-                StringAssert.Contains("cannot be null", ex.Message);
+                Assert.Equal("columnName", ex.ParamName);
+                Assert.Contains("cannot be null", ex.Message);
             }
 
-            [Test]
+            [Fact]
             public void EmptyColumnName_ThrowsException()
             {
                 var ex = Assert.Throws<ArgumentNullException>(() => Dialect.GetColumnName(null, string.Empty, null));
-                Assert.AreEqual("ColumnName", ex.ParamName);
-                StringAssert.Contains("cannot be null", ex.Message);
+                Assert.Equal("columnName", ex.ParamName);
+                Assert.Contains("cannot be null", ex.Message);
             }
 
-            [Test]
+            [Fact]
             public void ColumnNameOnly_ReturnsProperlyQuoted()
             {
                 string result = Dialect.GetColumnName(null, "foo", null);
-                Assert.AreEqual("\"foo\"", result);
+                Assert.Equal("\"foo\"", result);
             }
 
-            [Test]
+            [Fact]
             public void PrefixColumnName_ReturnsProperlyQuoted()
             {
                 string result = Dialect.GetColumnName("bar", "foo", null);
-                Assert.AreEqual("\"bar\".\"foo\"", result);
+                Assert.Equal("\"bar\".\"foo\"", result);
             }
 
-            [Test]
+            [Fact]
             public void AllParams_ReturnsProperlyQuoted()
             {
                 string result = Dialect.GetColumnName("bar", "foo", "al");
-                Assert.AreEqual("\"bar\".\"foo\" AS \"al\"", result);
+                Assert.Equal("\"bar\".\"foo\" AS \"al\"", result);
             }
 
-            [Test]
+            [Fact]
             public void ContainsQuotes_DoesNotAddExtraQuotes()
             {
                 string result = Dialect.GetColumnName("\"bar\"", "\"foo\"", "\"al\"");
-                Assert.AreEqual("\"bar\".\"foo\" AS \"al\"", result);
+                Assert.Equal("\"bar\".\"foo\" AS \"al\"", result);
             }
         }
 

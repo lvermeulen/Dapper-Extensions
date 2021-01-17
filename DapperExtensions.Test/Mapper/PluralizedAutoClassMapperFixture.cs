@@ -1,72 +1,69 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using DapperExtensions.Mapper;
-using NUnit.Framework;
+using Xunit;
 
 namespace DapperExtensions.Test.Mapper
 {
-    [TestFixture]
+    
     public class PluralizedAutoClassMapperFixture
     {
-        [TestFixture]
+        
         public class PluralizedAutoClassMapperTableName
         {
-            [Test]
+            [Fact]
             public void ReturnsProperPluralization()
             {
-                PluralizedAutoClassMapper<Foo> m = GetMapper<Foo>();
+                var m = GetMapper<Foo>();
                 m.Table("robot");
-                Assert.AreEqual("robots", m.TableName);
+                Assert.Equal("robots", m.TableName);
             }
 
-            [Test]
+            [Fact]
             public void ReturnsProperPluralizationWhenWordEndsWithY()
             {
-                PluralizedAutoClassMapper<Foo> m = GetMapper<Foo>();
+                var m = GetMapper<Foo>();
                 m.Table("penny");
-                Assert.AreEqual("pennies", m.TableName);
+                Assert.Equal("pennies", m.TableName);
             }
 
-            [Test]
+            [Fact]
             public void ReturnsProperPluralizationWhenWordEndsWithS()
             {
-                PluralizedAutoClassMapper<Foo> m = GetMapper<Foo>();
+                var m = GetMapper<Foo>();
                 m.Table("mess");
-                Assert.AreEqual("messes", m.TableName);
+                Assert.Equal("messes", m.TableName);
             }
 
-            [Test]
+            [Fact]
             public void ReturnsProperPluralizationWhenWordEndsWithF()
             {
-                PluralizedAutoClassMapper<Foo> m = GetMapper<Foo>();
+                var m = GetMapper<Foo>();
                 m.Table("life");
-                Assert.AreEqual("lives", m.TableName);
+                Assert.Equal("lives", m.TableName);
             }
 
-            [Test]
+            [Fact]
             public void ReturnsProperPluralizationWhenWordWithFe()
             {
-                PluralizedAutoClassMapper<Foo> m = GetMapper<Foo>();
+                var m = GetMapper<Foo>();
                 m.Table("leaf");
-                Assert.AreEqual("leaves", m.TableName);
+                Assert.Equal("leaves", m.TableName);
             }
 
-            [Test]
+            [Fact]
             public void ReturnsProperPluralizationWhenWordContainsF()
             {
-                PluralizedAutoClassMapper<Foo> m = GetMapper<Foo>();
+                var m = GetMapper<Foo>();
                 m.Table("profile");
-                Assert.AreEqual("profiles", m.TableName);
+                Assert.Equal("profiles", m.TableName);
             }
 
-            [Test]
+            [Fact]
             public void ReturnsProperPluralizationWhenWordContainsFe()
             {
-                PluralizedAutoClassMapper<Foo> m = GetMapper<Foo>();
+                var m = GetMapper<Foo>();
                 m.Table("effect");
-                Assert.AreEqual("effects", m.TableName);
+                Assert.Equal("effects", m.TableName);
             }
 
             private PluralizedAutoClassMapper<T> GetMapper<T>() where T : class
@@ -75,23 +72,23 @@ namespace DapperExtensions.Test.Mapper
             }
         }
 
-        [TestFixture]
+        
         public class CustomPluralizedMapperTableName
         {
-            [Test]
+            [Fact]
             public void ReturnsProperPluralization()
             {
-                CustomPluralizedMapper<Foo> m = GetMapper<Foo>();
+                var m = GetMapper<Foo>();
                 m.Table("Dog");
-                Assert.AreEqual("Dogs", m.TableName);
+                Assert.Equal("Dogs", m.TableName);
             }
 
-            [Test]
+            [Fact]
             public void ReturnsProperResultsForExceptions()
             {
-                CustomPluralizedMapper<Foo> m = GetMapper<Foo>();
+                var m = GetMapper<Foo>();
                 m.Table("Person");
-                Assert.AreEqual("People", m.TableName);
+                Assert.Equal("People", m.TableName);
             }
 
             private CustomPluralizedMapper<T> GetMapper<T>() where T : class

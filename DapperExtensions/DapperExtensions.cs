@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using DapperExtensions.Sql;
 using DapperExtensions.Mapper;
 
@@ -11,44 +9,32 @@ namespace DapperExtensions
 {
     public static class DapperExtensions
     {
-        private readonly static object _lock = new object();
+        private static readonly object s_lock = new object();
 
-        private static Func<IDapperExtensionsConfiguration, IDapperImplementor> _instanceFactory;
-        private static IDapperImplementor _instance;
-        private static IDapperExtensionsConfiguration _configuration;
+        private static Func<IDapperExtensionsConfiguration, IDapperImplementor> s_instanceFactory;
+        private static IDapperImplementor s_instance;
+        private static IDapperExtensionsConfiguration s_configuration;
         
         /// <summary>
-        /// Gets or sets the default class mapper to use when generating class maps. If not specified, AutoClassMapper<T> is used.
-        /// DapperExtensions.Configure(Type, IList<Assembly>, ISqlDialect) can be used instead to set all values at once
+        /// Gets or sets the default class mapper to use when generating class maps. If not specified, AutoClassMapper&lt;T&gt; is used.
+        /// DapperExtensions.Configure(Type, IList&lt;Assembly&gt;, ISqlDialect) can be used instead to set all values at once
         /// </summary>
         public static Type DefaultMapper
         {
-            get
-            {
-                return _configuration.DefaultMapper;
-            }
+            get => s_configuration.DefaultMapper;
 
-            set
-            {
-                Configure(value, _configuration.MappingAssemblies, _configuration.Dialect);
-            }
+            set => Configure(value, s_configuration.MappingAssemblies, s_configuration.Dialect);
         }
 
         /// <summary>
         /// Gets or sets the type of sql to be generated.
-        /// DapperExtensions.Configure(Type, IList<Assembly>, ISqlDialect) can be used instead to set all values at once
+        /// DapperExtensions.Configure(Type, IList&lt;Assembly&gt;, ISqlDialect) can be used instead to set all values at once
         /// </summary>
         public static ISqlDialect SqlDialect
         {
-            get
-            {
-                return _configuration.Dialect;
-            }
+            get => s_configuration.Dialect;
 
-            set
-            {
-                Configure(_configuration.DefaultMapper, _configuration.MappingAssemblies, value);
-            }
+            set => Configure(s_configuration.DefaultMapper, s_configuration.MappingAssemblies, value);
         }
         
         /// <summary>
@@ -56,19 +42,11 @@ namespace DapperExtensions
         /// </summary>
         public static Func<IDapperExtensionsConfiguration, IDapperImplementor> InstanceFactory
         {
-            get
-            {
-                if (_instanceFactory == null)
-                {
-                    _instanceFactory = config => new DapperImplementor(new SqlGeneratorImpl(config));
-                }
-
-                return _instanceFactory;
-            }
+            get => s_instanceFactory ?? (s_instanceFactory = config => new DapperImplementor(new SqlGeneratorImpl(config)));
             set
             {
-                _instanceFactory = value;
-                Configure(_configuration.DefaultMapper, _configuration.MappingAssemblies, _configuration.Dialect);
+                s_instanceFactory = value;
+                Configure(s_configuration.DefaultMapper, s_configuration.MappingAssemblies, s_configuration.Dialect);
             }
         }
 
@@ -79,18 +57,18 @@ namespace DapperExtensions
         {
             get
             {
-                if (_instance == null)
+                if (s_instance == null)
                 {
-                    lock (_lock)
+                    lock (s_lock)
                     {
-                        if (_instance == null)
+                        if (s_instance == null)
                         {
-                            _instance = InstanceFactory(_configuration);
+                            s_instance = InstanceFactory(s_configuration);
                         }
                     }
                 }
 
-                return _instance;
+                return s_instance;
             }
         }
 
@@ -105,19 +83,17 @@ namespace DapperExtensions
         /// <param name="assemblies"></param>
         public static void SetMappingAssemblies(IList<Assembly> assemblies)
         {
-            Configure(_configuration.DefaultMapper, assemblies, _configuration.Dialect);
+            Configure(s_configuration.DefaultMapper, assemblies, s_configuration.Dialect);
         }
 
         /// <summary>
         /// Configure DapperExtensions extension methods.
         /// </summary>
-        /// <param name="defaultMapper"></param>
-        /// <param name="mappingAssemblies"></param>
-        /// <param name="sqlDialect"></param>
+        /// <param name="configuration">The configuration</param>
         public static void Configure(IDapperExtensionsConfiguration configuration)
         {
-            _instance = null;
-            _configuration = configuration;
+            s_instance = null;
+            s_configuration = configuration;
         }
 
         /// <summary>
@@ -145,7 +121,7 @@ namespace DapperExtensions
         /// </summary>
         public static void Insert<T>(this IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction = null, int? commandTimeout = null) where T : class
         {
-            Instance.Insert<T>(connection, entities, transaction, commandTimeout);
+            Instance.Insert(connection, entities, transaction, commandTimeout);
         }
 
         /// <summary>
@@ -156,7 +132,7 @@ namespace DapperExtensions
         /// </summary>
         public static dynamic Insert<T>(this IDbConnection connection, T entity, IDbTransaction transaction = null, int? commandTimeout = null) where T : class
         {
-            return Instance.Insert<T>(connection, entity, transaction, commandTimeout);
+            return Instance.Insert(connection, entity, transaction, commandTimeout);
         }
 
         /// <summary>
@@ -164,7 +140,7 @@ namespace DapperExtensions
         /// </summary>
         public static bool Update<T>(this IDbConnection connection, T entity, IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false) where T : class
         {
-            return Instance.Update<T>(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties);
+            return Instance.Update(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties);
         }
 
         /// <summary>
@@ -172,7 +148,7 @@ namespace DapperExtensions
         /// </summary>
         public static bool Delete<T>(this IDbConnection connection, T entity, IDbTransaction transaction = null, int? commandTimeout = null) where T : class
         {
-            return Instance.Delete<T>(connection, entity, transaction, commandTimeout);
+            return Instance.Delete(connection, entity, transaction, commandTimeout);
         }
 
         /// <summary>

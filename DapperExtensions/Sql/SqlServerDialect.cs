@@ -7,19 +7,13 @@ namespace DapperExtensions.Sql
 {
     public class SqlServerDialect : SqlDialectBase
     {
-        public override char OpenQuote
-        {
-            get { return '['; }
-        }
+        public override char OpenQuote => '[';
 
-        public override char CloseQuote
-        {
-            get { return ']'; }
-        }
+        public override char CloseQuote => ']';
 
         public override string GetIdentitySql(string tableName)
         {
-            return string.Format("SELECT CAST(SCOPE_IDENTITY()  AS BIGINT) AS [Id]");
+            return "SELECT CAST(SCOPE_IDENTITY()  AS BIGINT) AS [Id]";
         }
 
         public override string GetPagingSql(string sql, int page, int resultsPerPage, IDictionary<string, object> parameters)
@@ -32,26 +26,22 @@ namespace DapperExtensions.Sql
         {
             if (string.IsNullOrEmpty(sql))
             {
-                throw new ArgumentNullException("SQL");
+                throw new ArgumentNullException(nameof(sql));
             }
 
             if (parameters == null)
             {
-                throw new ArgumentNullException("Parameters");
+                throw new ArgumentNullException(nameof(parameters));
             }
 
             int selectIndex = GetSelectEnd(sql) + 1;
-            string orderByClause = GetOrderByClause(sql);
-            if (orderByClause == null)
-            {
-                orderByClause = "ORDER BY CURRENT_TIMESTAMP";
-            }
+            string orderByClause = GetOrderByClause(sql) ?? "ORDER BY CURRENT_TIMESTAMP";
 
 
             string projectedColumns = GetColumnNames(sql).Aggregate(new StringBuilder(), (sb, s) => (sb.Length == 0 ? sb : sb.Append(", ")).Append(GetColumnName("_proj", s, null)), sb => sb.ToString());
             string newSql = sql
                 .Replace(" " + orderByClause, string.Empty)
-                .Insert(selectIndex, string.Format("ROW_NUMBER() OVER(ORDER BY {0}) AS {1}, ", orderByClause.Substring(9), GetColumnName(null, "_row_number", null)));
+                .Insert(selectIndex, $"ROW_NUMBER() OVER(ORDER BY {orderByClause.Substring(9)}) AS {GetColumnName(null, "_row_number", null)}, ");
 
             string result = string.Format("SELECT TOP({0}) {1} FROM ({2}) [_proj] WHERE {3} >= @_pageStartRow ORDER BY {3}",
                 maxResults, projectedColumns.Trim(), newSql, GetColumnName("_proj", "_row_number", null));
@@ -84,7 +74,7 @@ namespace DapperExtensions.Sql
             int selectCount = 0;
             string[] words = sql.Split(' ');
             int fromIndex = 0;
-            foreach (var word in words)
+            foreach (string word in words)
             {
                 if (word.Equals("SELECT", StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -118,7 +108,7 @@ namespace DapperExtensions.Sql
                 return 6;
             }
 
-            throw new ArgumentException("SQL must be a SELECT statement.", "sql");
+            throw new ArgumentException("SQL must be a SELECT statement.", nameof(sql));
         }
 
         protected virtual IList<string> GetColumnNames(string sql)
@@ -126,7 +116,7 @@ namespace DapperExtensions.Sql
             int start = GetSelectEnd(sql);
             int stop = GetFromStart(sql);
             string[] columnSql = sql.Substring(start, stop - start).Split(',');
-            List<string> result = new List<string>();
+            var result = new List<string>();
             foreach (string c in columnSql)
             {
                 int index = c.IndexOf(" AS ", StringComparison.InvariantCultureIgnoreCase);

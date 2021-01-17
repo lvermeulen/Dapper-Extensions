@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
 using DapperExtensions.Mapper;
 using DapperExtensions.Sql;
 
@@ -61,24 +59,15 @@ namespace DapperExtensions
             }
         }
 
-        public bool HasActiveTransaction
-        {
-            get
-            {
-                return _transaction != null;
-            }
-        }
+        public bool HasActiveTransaction => _transaction != null;
 
-        public IDbConnection Connection { get; private set; }
+        public IDbConnection Connection { get; }
 
         public void Dispose()
         {
             if (Connection.State != ConnectionState.Closed)
             {
-                if (_transaction != null)
-                {
-                    _transaction.Rollback();
-                }
+	            _transaction?.Rollback();
 
                 Connection.Close();
             }
@@ -109,14 +98,14 @@ namespace DapperExtensions
                 action();
                 Commit();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 if (HasActiveTransaction)
                 {
                     Rollback();
                 }
 
-                throw ex;
+                throw;
             }
         }
 
@@ -125,18 +114,18 @@ namespace DapperExtensions
             BeginTransaction();
             try
             {
-                T result = func();
+                var result = func();
                 Commit();
                 return result;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 if (HasActiveTransaction)
                 {
                     Rollback();
                 }
 
-                throw ex;
+                throw;
             }
         }
         
@@ -152,32 +141,32 @@ namespace DapperExtensions
 
         public void Insert<T>(IEnumerable<T> entities, IDbTransaction transaction, int? commandTimeout) where T : class
         {
-            _dapper.Insert<T>(Connection, entities, transaction, commandTimeout);
+            _dapper.Insert(Connection, entities, transaction, commandTimeout);
         }
 
         public void Insert<T>(IEnumerable<T> entities, int? commandTimeout) where T : class
         {
-            _dapper.Insert<T>(Connection, entities, _transaction, commandTimeout);
+            _dapper.Insert(Connection, entities, _transaction, commandTimeout);
         }
 
         public dynamic Insert<T>(T entity, IDbTransaction transaction, int? commandTimeout) where T : class
         {
-            return _dapper.Insert<T>(Connection, entity, transaction, commandTimeout);
+            return _dapper.Insert(Connection, entity, transaction, commandTimeout);
         }
 
         public dynamic Insert<T>(T entity, int? commandTimeout) where T : class
         {
-            return _dapper.Insert<T>(Connection, entity, _transaction, commandTimeout);
+            return _dapper.Insert(Connection, entity, _transaction, commandTimeout);
         }
 
         public bool Update<T>(T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties) where T : class
         {
-            return _dapper.Update<T>(Connection, entity, transaction, commandTimeout, ignoreAllKeyProperties);
+            return _dapper.Update(Connection, entity, transaction, commandTimeout, ignoreAllKeyProperties);
         }
 
         public bool Update<T>(T entity, int? commandTimeout, bool ignoreAllKeyProperties) where T : class
         {
-            return _dapper.Update<T>(Connection, entity, _transaction, commandTimeout, ignoreAllKeyProperties);
+            return _dapper.Update(Connection, entity, _transaction, commandTimeout, ignoreAllKeyProperties);
         }
 
         public bool Delete<T>(T entity, IDbTransaction transaction, int? commandTimeout) where T : class

@@ -5,23 +5,18 @@ namespace DapperExtensions.Sql
 {
     public class OracleDialect : SqlDialectBase
     {
-        public OracleDialect() { }
-
-        public override string GetIdentitySql(string tableName)
+	    public override string GetIdentitySql(string tableName)
         {
             throw new System.NotImplementedException("Oracle does not support get last inserted identity.");
         }
 
-        public override bool SupportsMultipleStatements
-        {
-            get { return false; }
-        }
+        public override bool SupportsMultipleStatements => false;
 
         //from Simple.Data.Oracle implementation https://github.com/flq/Simple.Data.Oracle/blob/master/Simple.Data.Oracle/OraclePager.cs
         public override string GetPagingSql(string sql, int page, int resultsPerPage, IDictionary<string, object> parameters)
         {
-            var toSkip = page * resultsPerPage;
-            var topLimit = (page + 1) * resultsPerPage;
+            int toSkip = page * resultsPerPage;
+            int topLimit = (page + 1) * resultsPerPage;
          
             var sb = new StringBuilder();
             sb.AppendLine("SELECT * FROM (");
@@ -57,24 +52,15 @@ namespace DapperExtensions.Sql
         {
             if (value != null && value[0]=='`')
             {
-                return string.Format("{0}{1}{2}", OpenQuote, value.Substring(1, value.Length - 2), CloseQuote);
+                return $"{OpenQuote}{value.Substring(1, value.Length - 2)}{CloseQuote}";
             }
-            return value.ToUpper();
+            return value?.ToUpper();
         }
 
-        public override char ParameterPrefix
-        {
-            get { return ':'; }
-        }
+        public override char ParameterPrefix => ':';
 
-        public override char OpenQuote
-        {
-            get { return '"'; }
-        }
+        public override char OpenQuote => '"';
 
-        public override char CloseQuote
-        {
-            get { return '"'; }
-        }
+        public override char CloseQuote => '"';
     }
 }

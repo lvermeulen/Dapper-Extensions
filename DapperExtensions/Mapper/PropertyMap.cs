@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
 namespace DapperExtensions.Mapper
@@ -32,10 +30,7 @@ namespace DapperExtensions.Mapper
         /// <summary>
         /// Gets the name of the property by using the specified propertyInfo.
         /// </summary>
-        public string Name
-        {
-            get { return PropertyInfo.Name; }
-        }
+        public string Name => PropertyInfo.Name;
 
         /// <summary>
         /// Gets the column name for the current property.
@@ -60,7 +55,7 @@ namespace DapperExtensions.Mapper
         /// <summary>
         /// Gets the property info for the current property.
         /// </summary>
-        public PropertyInfo PropertyInfo { get; private set; }
+        public PropertyInfo PropertyInfo { get; }
 
         /// <summary>
         /// Fluently sets the column name for the property.
@@ -75,17 +70,17 @@ namespace DapperExtensions.Mapper
         /// <summary>
         /// Fluently sets the key type of the property.
         /// </summary>
-        /// <param name="columnName">The column name as it exists in the database.</param>
+        /// <param name="keyType">The key type</param>
         public PropertyMap Key(KeyType keyType)
         {
             if (Ignored)
             {
-                throw new ArgumentException(string.Format("'{0}' is ignored and cannot be made a key field. ", Name));
+                throw new ArgumentException($"'{Name}' is ignored and cannot be made a key field. ");
             }
 
             if (IsReadOnly)
             {
-                throw new ArgumentException(string.Format("'{0}' is readonly and cannot be made a key field. ", Name));
+                throw new ArgumentException($"'{Name}' is readonly and cannot be made a key field. ");
             }
 
             KeyType = keyType;
@@ -99,7 +94,7 @@ namespace DapperExtensions.Mapper
         {
             if (KeyType != KeyType.NotAKey)
             {
-                throw new ArgumentException(string.Format("'{0}' is a key field and cannot be ignored.", Name));
+                throw new ArgumentException($"'{Name}' is a key field and cannot be ignored.");
             }
 
             Ignored = true;
@@ -113,7 +108,7 @@ namespace DapperExtensions.Mapper
         {
             if (KeyType != KeyType.NotAKey)
             {
-                throw new ArgumentException(string.Format("'{0}' is a key field and cannot be marked readonly.", Name));
+                throw new ArgumentException($"'{Name}' is a key field and cannot be marked readonly.");
             }
 
             IsReadOnly = true;

@@ -1,55 +1,53 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using DapperExtensions.Mapper;
-using NUnit.Framework;
+using Xunit;
 
 namespace DapperExtensions.Test.Mapper
 {
-    [TestFixture]
+    //
     public class AutoClassMapperFixture
     {
-        [TestFixture]
+        //
         public class AutoClassMapperTableName
         {
-            [Test]
+            [Fact]
             public void Constructor_ReturnsProperName()
             {
-                AutoClassMapper<Foo> m = GetMapper<Foo>();
-                Assert.AreEqual("Foo", m.TableName);
+                var m = GetMapper<Foo>();
+                Assert.Equal("Foo", m.TableName);
             }
 
-            [Test]
+            [Fact]
             public void SettingTableName_ReturnsProperName()
             {
-                AutoClassMapper<Foo> m = GetMapper<Foo>();
+                var m = GetMapper<Foo>();
                 m.Table("Barz");
-                Assert.AreEqual("Barz", m.TableName);
+                Assert.Equal("Barz", m.TableName);
             }
 
-            [Test]
+            [Fact]
             public void Sets_IdPropertyToKeyWhenFirstProperty()
             {
-                AutoClassMapper<IdIsFirst> m = GetMapper<IdIsFirst>();
+                var m = GetMapper<IdIsFirst>();
                 var map = m.Properties.Single(p => p.KeyType == KeyType.Guid);
-                Assert.IsTrue(map.ColumnName == "Id");
+                Assert.True(map.ColumnName == "Id");
             }
 
-            [Test]
+            [Fact]
             public void Sets_IdPropertyToKeyWhenFoundInClass()
             {
-                AutoClassMapper<IdIsSecond> m = GetMapper<IdIsSecond>();
+                var m = GetMapper<IdIsSecond>();
                 var map = m.Properties.Single(p => p.KeyType == KeyType.Guid);
-                Assert.IsTrue(map.ColumnName == "Id");
+                Assert.True(map.ColumnName == "Id");
             }
 
-            [Test]
+            [Fact]
             public void Sets_IdFirstPropertyEndingInIdWhenNoIdPropertyFound()
             {
-                AutoClassMapper<IdDoesNotExist> m = GetMapper<IdDoesNotExist>();
+                var m = GetMapper<IdDoesNotExist>();
                 var map = m.Properties.Single(p => p.KeyType == KeyType.Guid);
-                Assert.IsTrue(map.ColumnName == "SomeId");
+                Assert.True(map.ColumnName == "SomeId");
             }
             
             private AutoClassMapper<T> GetMapper<T>() where T : class
@@ -58,21 +56,21 @@ namespace DapperExtensions.Test.Mapper
             }
         }
 
-        [TestFixture]
+        
         public class CustomAutoMapperTableName
         {
-            [Test]
+            [Fact]
             public void ReturnsProperPluralization()
             {
-                CustomAutoMapper<Foo> m = GetMapper<Foo>();
-                Assert.AreEqual("Foo", m.TableName);
+                var m = GetMapper<Foo>();
+                Assert.Equal("Foo", m.TableName);
             }
 
-            [Test]
+            [Fact]
             public void ReturnsProperResultsForExceptions()
             {
-                CustomAutoMapper<Foo2> m = GetMapper<Foo2>();
-                Assert.AreEqual("TheFoo", m.TableName);
+                var m = GetMapper<Foo2>();
+                Assert.Equal("TheFoo", m.TableName);
             }
 
             private CustomAutoMapper<T> GetMapper<T>() where T : class

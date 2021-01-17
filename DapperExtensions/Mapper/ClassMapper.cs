@@ -38,12 +38,9 @@ namespace DapperExtensions.Mapper
         /// <summary>
         /// A collection of properties that will map to columns in the database table.
         /// </summary>
-        public IList<IPropertyMap> Properties { get; private set; }
+        public IList<IPropertyMap> Properties { get; }
 
-        public Type EntityType
-        {
-            get { return typeof(T); }
-        }
+        public Type EntityType => typeof(T);
 
         public ClassMapper()
         {
@@ -65,7 +62,7 @@ namespace DapperExtensions.Mapper
             Table(typeof(T).Name);
         }
 
-        protected Dictionary<Type, KeyType> PropertyTypeKeyTypeMapping { get; private set; }
+        protected Dictionary<Type, KeyType> PropertyTypeKeyTypeMapping { get; }
 
         public virtual void Schema(string schemaName)
         {
@@ -84,7 +81,7 @@ namespace DapperExtensions.Mapper
 
         protected virtual void AutoMap(Func<Type, PropertyInfo, bool> canMap)
         {
-            Type type = typeof(T);
+            var type = typeof(T);
             bool hasDefinedKey = Properties.Any(p => p.KeyType != KeyType.NotAKey);
             PropertyMap keyMap = null;
             foreach (var propertyInfo in type.GetProperties())
@@ -99,7 +96,7 @@ namespace DapperExtensions.Mapper
                     continue;
                 }
 
-                PropertyMap map = Map(propertyInfo);
+                var map = Map(propertyInfo);
                 if (!hasDefinedKey)
                 {
                     if (string.Equals(map.PropertyInfo.Name, "id", StringComparison.InvariantCultureIgnoreCase))
@@ -114,12 +111,9 @@ namespace DapperExtensions.Mapper
                 }
             }
 
-            if (keyMap != null)
-            {
-                keyMap.Key(PropertyTypeKeyTypeMapping.ContainsKey(keyMap.PropertyInfo.PropertyType)
-                    ? PropertyTypeKeyTypeMapping[keyMap.PropertyInfo.PropertyType]
-                    : KeyType.Assigned);
-            }
+            keyMap?.Key(PropertyTypeKeyTypeMapping.ContainsKey(keyMap.PropertyInfo.PropertyType)
+	            ? PropertyTypeKeyTypeMapping[keyMap.PropertyInfo.PropertyType]
+	            : KeyType.Assigned);
         }
 
         /// <summary>
@@ -127,7 +121,7 @@ namespace DapperExtensions.Mapper
         /// </summary>
         protected PropertyMap Map(Expression<Func<T, object>> expression)
         {
-            PropertyInfo propertyInfo = ReflectionHelper.GetProperty(expression) as PropertyInfo;
+            var propertyInfo = ReflectionHelper.GetProperty(expression) as PropertyInfo;
             return Map(propertyInfo);
         }
 
@@ -136,8 +130,8 @@ namespace DapperExtensions.Mapper
         /// </summary>
         protected PropertyMap Map(PropertyInfo propertyInfo)
         {
-            PropertyMap result = new PropertyMap(propertyInfo);
-            this.GuardForDuplicatePropertyMap(result);
+            var result = new PropertyMap(propertyInfo);
+            GuardForDuplicatePropertyMap(result);
             Properties.Add(result);
             return result;
         }
@@ -149,21 +143,21 @@ namespace DapperExtensions.Mapper
         protected void UnMap(Expression<Func<T, object>> expression)
         {
             var propertyInfo = ReflectionHelper.GetProperty(expression) as PropertyInfo;
-            var mapping = this.Properties.Where(w => w.Name == propertyInfo.Name).SingleOrDefault();
+            var mapping = Properties.SingleOrDefault(w => w.Name == propertyInfo?.Name);
 
             if (mapping == null)
             {
                 throw new ApplicationException("Unable to UnMap because mapping does not exist.");
             }
 
-            this.Properties.Remove(mapping);
+            Properties.Remove(mapping);
         }
 
         private void GuardForDuplicatePropertyMap(PropertyMap result)
         {
             if (Properties.Any(p => p.Name.Equals(result.Name)))
             {
-                throw new ArgumentException(string.Format("Duplicate mapping for property {0} detected.",result.Name));
+                throw new ArgumentException($"Duplicate mapping for property {result.Name} detected.");
             }
         }
     }

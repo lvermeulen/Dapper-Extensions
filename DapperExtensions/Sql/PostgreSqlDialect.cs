@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace DapperExtensions.Sql
 {
@@ -20,7 +17,7 @@ namespace DapperExtensions.Sql
 		
 		public override string GetSetSql(string sql, int pageNumber, int maxResults, IDictionary<string, object> parameters)
 		{
-			string result = string.Format("{0} LIMIT @maxResults OFFSET @pageStartRowNbr", sql);
+			string result = $"{sql} LIMIT @maxResults OFFSET @pageStartRowNbr";
 			parameters.Add("@maxResults", maxResults);
 			parameters.Add("@pageStartRowNbr", pageNumber * maxResults);
 			return result;

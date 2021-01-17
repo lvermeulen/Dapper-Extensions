@@ -1,6 +1,4 @@
-﻿using System.Text;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -13,15 +11,10 @@ namespace DapperExtensions.Test.Helpers
 
         public Protected(object obj)
         {
-            if (obj == null)
-            {
-                throw new ArgumentException("object cannot be null.", "obj");
-            }
-
-            _obj = obj;
+	        _obj = obj ?? throw new ArgumentException("object cannot be null.", nameof(obj));
         }
 
-        public static Expression IsNull<T>()
+        public static Expression Null<T>()
         {
             Expression<Func<Type>> expr = () => typeof(T);
             return expr.Body;
@@ -49,7 +42,7 @@ namespace DapperExtensions.Test.Helpers
 
         public object InvokeMethod(string name, Type[] genericTypes, object[] parameters)
         {
-            object[] pa = parameters.Select(p =>
+            var pa = parameters.Select(p =>
             {
                 if (p is ConstantExpression)
                 {
@@ -58,7 +51,7 @@ namespace DapperExtensions.Test.Helpers
 
                 return p;
             }).ToArray();
-            MethodInfo method = GetMethod(name, parameters);
+            var method = GetMethod(name, parameters);
             try
             {
                 if (genericTypes != null && genericTypes.Any())
@@ -70,25 +63,25 @@ namespace DapperExtensions.Test.Helpers
             }
             catch (TargetInvocationException ex)
             {
-                throw ex.InnerException;
+                throw ex.InnerException ?? ex;
             }
         }
 
         public MethodInfo GetMethod(string name, object[] parameters)
         {
-            Type[] types = parameters.Select(p =>
+            var types = parameters.Select(p =>
             {
-                if (p is ConstantExpression)
+                if (p is ConstantExpression constantExpression)
                 {
-                    return (Type)((ConstantExpression)p).Value;
+                    return (Type)constantExpression.Value;
                 }
 
                 return p.GetType();
             }).ToArray();
-            MethodInfo method = _obj.GetType().GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, null, types, null);
+            var method = _obj.GetType().GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, null, types, null);
             if (method == null)
             {
-                throw new ArgumentException(string.Format("{0} was not found in {1}.", name, _obj.GetType()), name);
+                throw new ArgumentException($"{name} was not found in {_obj.GetType()}.", name);
             }
 
             return method;

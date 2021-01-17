@@ -1,69 +1,67 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using DapperExtensions.Mapper;
-using DapperExtensions.Test.Data;
 using DapperExtensions.Test.Entities;
 using DapperExtensions.Test.Maps;
-using NUnit.Framework;
+using Xunit;
 
 namespace DapperExtensions.Test.IntegrationTests
 {
-    [TestFixture]
+    
     public class NonCrudFixture
     {
-        [TestFixture]
+        
         public class GetNextGuidMethod
         {
-            [Test]
+            [Fact]
             public void GetMultiple_DoesNotDuplicate()
             {
-                List<Guid> list = new List<Guid>();
+                var list = new List<Guid>();
                 for (int i = 0; i < 1000; i++)
                 {
-                    Guid id = DapperExtensions.GetNextGuid();
-                    Assert.IsFalse(list.Contains(id));
+                    var id = DapperExtensions.GetNextGuid();
+                    Assert.False(list.Contains(id));
                     list.Add(id);
                 }
             }
         }
 
-        [TestFixture]
+        
         public class GetMapMethod
         {
-            [Test]
+            [Fact]
             public void NoMappingClass_ReturnsDefaultMapper()
             {
                 var mapper = DapperExtensions.GetMap<EntityWithoutMapper>();
-                Assert.AreEqual(typeof(AutoClassMapper<EntityWithoutMapper>), mapper.GetType());
+                Assert.Equal(typeof(AutoClassMapper<EntityWithoutMapper>), mapper.GetType());
             }
 
-            [Test]
+            [Fact]
             public void ClassMapperDescendant_Returns_DefinedClass()
             {
                 var mapper = DapperExtensions.GetMap<EntityWithMapper>();
-                Assert.AreEqual(typeof(EntityWithMapperMapper), mapper.GetType());
+                Assert.Equal(typeof(EntityWithMapperMapper), mapper.GetType());
             }
 
-            [Test]
+            [Fact]
             public void ClassMapperInterface_Returns_DefinedMapper()
             {
                 var mapper = DapperExtensions.GetMap<EntityWithInterfaceMapper>();
-                Assert.AreEqual(typeof(EntityWithInterfaceMapperMapper), mapper.GetType());
+                Assert.Equal(typeof(EntityWithInterfaceMapperMapper), mapper.GetType());
             }
 
-            [Test]
+            [Fact]
             public void MappingClass_ReturnsFromDifferentAssembly()
             {
                 DapperExtensions.SetMappingAssemblies(new[] { typeof(ExternallyMappedMap).Assembly });
                 var mapper = DapperExtensions.GetMap<ExternallyMapped>();
-                Assert.AreEqual(typeof(ExternallyMappedMap.ExternallyMappedMapper), mapper.GetType());
+                Assert.Equal(typeof(ExternallyMappedMap.ExternallyMappedMapper), mapper.GetType());
 
                 DapperExtensions.SetMappingAssemblies(null);
                 mapper = DapperExtensions.GetMap<ExternallyMapped>();
-                Assert.AreEqual(typeof(AutoClassMapper<ExternallyMapped>), mapper.GetType());
+                Assert.Equal(typeof(AutoClassMapper<ExternallyMapped>), mapper.GetType());
             }
 
             private class EntityWithoutMapper
